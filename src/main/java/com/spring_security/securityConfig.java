@@ -28,7 +28,13 @@ public class securityConfig {
         UserDetails user = User.withUsername("akshay")
                 .password("{noop}akshay1")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+        UserDetails admin = User.withUsername("admin")
+                .password("{noop}admin1")
+                .build();
+        UserDetails user1 = User.withUsername("user")
+                .password("{noop}user1")
+                .build();
+        return new InMemoryUserDetailsManager(user, admin, user1);
     }
 
 }
