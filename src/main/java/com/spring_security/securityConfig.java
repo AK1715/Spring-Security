@@ -3,10 +3,12 @@ package com.spring_security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,11 +29,13 @@ public class securityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http){
-        http.authorizeHttpRequests(authorizeRequest ->
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorizeRequest ->
                 authorizeRequest.requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/user/**").hasAnyRole( "ADMIN","USER")
+                                .requestMatchers("/signin").permitAll()
                                 .anyRequest().authenticated());
-        http.httpBasic(Customizer.withDefaults());
+//        http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
 
@@ -51,15 +55,27 @@ public class securityConfig {
 //        return new InMemoryUserDetailsManager(user, admin, user1);  // storing data in inMemory
         JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
 
-        userDetailsManager.createUser(user);
-        userDetailsManager.createUser(user1);
-        userDetailsManager.createUser(admin);
+        if(!userDetailsManager.userExists(user.getUsername())){
+            userDetailsManager.createUser(user);
+        }
+        if(!userDetailsManager.userExists(user1.getUsername())){
+            userDetailsManager.createUser(user1);
+        }
+        if (!userDetailsManager.userExists(admin.getUsername())) {
+            userDetailsManager.createUser(admin);
+        }
+
         return userDetailsManager;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration builder){
+        return builder.getAuthenticationManager();
     }
 
 }
