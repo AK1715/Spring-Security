@@ -3,7 +3,6 @@ package com.spring_security;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,7 +25,7 @@ public class HelloController {
 
 
 //    @PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')") // we can also use hasAnyRole
+//    @PreAuthorize("hasAnyRole('ADMIN', 'USER')") // we can also use hasAnyRole
     @GetMapping("/hello")
     public String sayHello(){
         return "Hello, user Admin";
@@ -62,7 +61,7 @@ public class HelloController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails != null ? userDetails.getUsername() : null);
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
         return jwtToken;
 
